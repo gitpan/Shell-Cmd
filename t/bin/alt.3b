@@ -1,0 +1,4 @@
+#!/bin/sh
+
+echo "Alternate 3b will fail"
+exit 1

@@ -1,0 +1,5 @@
+#!/bin/sh
+
+echo "This will fail"
+echo "It will give an error" >&2
+exit 1

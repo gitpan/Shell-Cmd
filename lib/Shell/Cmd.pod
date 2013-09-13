@@ -1,0 +1,398 @@
+# Copyright (c) 2013-2013 Sullivan Beck. All rights reserved.
+# This program is free software; you can redistribute it and/or modify it
+# under the same terms as Perl itself.
+
+=pod
+
+=head1 NAME
+
+Shell::Cmd - run shell commands with enhanced support
+
+=head1 SYNOPSIS
+
+   use Shell::Cmd;
+
+   $obj = new Shell::Cmd;
+
+=head1 DESCRIPTION
+
+A very comman use of perl is to act as a wrapper around shell commands
+where it is used to prepare the shell commands, execute them, and deal
+with the resulting output.  Even where the bulk of the work is actually
+done in the perl script, creating small shell scripts within it to do
+some portion of the task is common.
+
+In the simplest form, running shell commands can be done very simply
+using the system() call, backticks, or several other ways, but I usually
+find myself wanting to do a bit more, and I frequently ended up writing
+a subroutine to run the shell command(s) with added functionality.
+
+This module is designed to take a list of shell commands and automatically
+add some common desirable functionality to them including:
+
+   o  Keeping or discarding STDOUT and STDERR (in any
+      combination).
+   o  Echoing commands if desired.
+   o  Dry-run mode where the shell script is created, but
+      not actually run.
+   o  Error trapping and handling at a per-command level.
+   o  Setting up environment variables for the commands.
+   o  Alternate commands that do the same thing so that you
+      can run the scripts more easily on multiple platforms.
+   o  Running the commands locally, or via. ssh on a remote
+      host (or hosts).
+   o  When running via ssh on multiple hosts, support serial
+      or parallel execution.
+   o  Handle quotes, dollar signs, etc. correctly, especially
+      when passing the command to ssh.
+
+This module is designed to run multiple commands in a single shell,
+adding standard shell commands automatically to handle the desired
+functionality.
+
+=head1 METHODS
+
+=over 4
+
+=item B<new>
+
+   $obj = new Shell::Cmd;
+
+This creates a new object containing commands.
+
+=item B<version>
+
+   $vers = $obj->version();
+
+Returns the version of this module.
+
+=item B<run>
+
+   $obj->run();
+
+This prepares a shell script based on the commands and options entered
+and runs it as appropriate.  There are several different ways in which
+the commands can be run, and these are described in the B<options> method
+below.
+
+If $obj is in 'dry-run' mode, the method should be called as:
+
+   ($script) = $obj->run();
+
+In this mode, the commands are not actually executed.  Instead, the
+script is built and returned.
+
+If $obj is in 'run' mode, the method should be called as:
+
+   ($err)    = $obj->run();
+
+The script is run, and output is sent directly to STDOUT and STDERR as
+appropriate for the options specified.
+
+The return value of the method is the exit code of the script.
+
+If $obj is in 'script' mode, the output from the commands are kept for
+further analysis.  The method should be called as:
+
+   @out      = $obj->run();
+
+Here, @out is a list of command output descriptors:
+
+   @out      = ( $err,
+                 [ $cmd_1, $out_1, $err_1 ],
+                 [ $cmd_2, $out_2, $err_2 ], ... )
+
+Each $cmd_i is either the i'th command, or an empty string (if you are not
+echoing the commands).
+
+Each $out_i and $err_i are STDOUT and STDERR from the i'th command.  They
+will be empty if the appropriate output is not kept (i.e. if STDOUT is not
+being kept, then $out_i will be empty in all cases).
+
+For example, if you are echoing commands, but only keeping STDOUT and STDERR
+for failed commands, $cmd_i will contain the command in all cases, but $out_i
+and $err_i will be empty for all but a command that failed.
+
+If one of the commands fail, $err will be set to 1, and only the
+commands that were tried will be included in @out (i.e. all of them up
+to and including the one that failed).
+
+=item B<ssh>
+
+   $obj->ssh(@hosts);
+
+This behaves similar to the run method except it will run the commands on
+each host in @hosts using ssh.
+
+In dry-run mode, the call is:
+
+   @script = $obj->ssh(@hosts);
+
+In 'run' mode, the call is:
+
+   @err = $obj->ssh(@hosts);
+
+In 'script' mode, the call is:
+
+   ($out1,$out2,...) = $obj->ssh(@hosts);
+
+where $out1 is a reference to the list of output on the 1st host, etc.
+
+Note that when running in parallel in real-time, the output that is
+printed to the terminal will be a mix of the output from each of the
+hosts the commands are being run on.
+
+=item B<flush>
+
+   $obj->flush( [@opts] );
+
+If @opts is not given, it removes the commands, directory, and
+environment stored in the object, and resets the options to the default
+values.
+
+If @opts is given, it can include any of the following:
+
+   commands   : clears commands
+   dire       : clears the directory
+   env        : clears the environment
+   opts       : clears all options
+
+=item B<dire>
+
+   $err = $obj->dire($dire);
+
+This method is used to specify the directory where all of the the
+commands should be run.  This can be overridden on a per-command basis
+using the cmd method, but all commands not specifically set will run
+in this directory.
+
+An error is returned if $dire does not exist.
+
+=item B<env>
+
+   $obj->env($var [,$val]);
+
+This can be called any number of times to set some environment
+variables.  If $val is not passed in, the environment variable will be
+explicitly unset.
+
+=item B<options>
+
+   $err = $obj->options(%options);
+
+This can be used to set some options about what will be done when the
+commands are run.
+
+%options is a hash of (OPTION => VALUE).  The following OPTIONS exist:
+
+OPTION = run
+------------
+
+The 'run' option determines how the commands will be handled by the run
+method.  The following values are available.
+
+   dry-run
+   run
+   script
+
+The default option is to use 'run' mode.
+
+The 'dry-run' mode will simply return the script that would have been
+run, but it doesn't actually run it.
+
+The 'run' mode is the standard way to run commands in an interactive
+setting.  It will run the commands in real-time and allow you to watch
+STDOUT and/or STDERR (depending on the options you choose) as they run.
+
+The 'script' mode is more appropriate for running in an unattended
+script.  It gathers the output and post-processes it allowing for more
+useful handling of the output.  For example, you could discard the output
+from commands that succeed and keep only the output for the one that
+failed.
+
+  OPTION = 'output'
+  -----------------
+
+The 'output' option can be one of the following:
+
+   both
+   merged
+   stdout
+   stderr
+   quiet
+
+In the 'run' or 'dry-run' modes, these determine what output will be
+displayed (in 'run' mode) or would be display if the script were run
+(in 'dry-run' mode).
+
+It can display only STDOUT, only STDERR, or both, or both can be
+discarded with the 'quiet' option.  The default is to include 'both'.
+The 'merged' option is used to display both but merge STDERR into
+STDOUT (using a 2>&1 redirection).
+
+The default in both cases is 'both'.
+
+In the 'script' mode, the output is determined by using a combination of
+the 'output' and 'f-output' options as described next.
+
+  OPTION = 'f-output'
+  -------------------
+
+The 'f-output' option can be one of the following:
+
+   f-both
+   f-merged
+   f-stdout
+   f-stderr
+   f-quiet
+
+and is only used in 'script' mode.
+
+In 'script' mode, all of the output is gathered and analyzed after
+the commands are run, so the output can be tailored to whether a
+command completed successfully or failed.
+
+The 'output' option controls what output is given for commands that
+completed successfully, and the 'f-output' option controls the output
+given for a failed command.
+
+It should be noted that since the command runs fully before it can be
+seen whether it failed or not, STDOUT/STDERR will either be separate
+or merged based on the first option.  If the first option is 'both',
+'stdout, or 'stderr', they will be separate, and the 'f-merged' option
+is not supported (it will be replaced by 'f-both').  If the first
+option is 'merged', then the 'f-both', 'f-stdout', and 'f-stderr'
+options are not supported and will be replaced by 'f-merged'.
+
+The default to these are 'both' and 'f-both'.
+
+  OPTION = 'echo'
+  ---------------
+
+The 'echo' option is only used in 'run' and 'script' modes.  With it, you
+can choose whether or not the commands should be displayed before they
+are run.
+
+The values are:
+
+   echo
+   noecho
+   failed
+
+With 'echo' and 'noecho', commands will be displayed or NOT displayed
+respectively.
+
+The 'failed' option is only available in the 'script' mode.  With this
+option, commands that succeed will not be displayed, but a command that
+fails will be displayed.
+
+  OPTION = 'ssh_num'
+  ------------------
+
+When running a command on multiple hosts via. ssh, it is possible to run
+them serially (one at a time) or in parallel.
+
+This option can be set to a number 0 or more.  If the number is 1, then
+only a single ssh connection will be made at a time so the hosts will all
+be contacted serially.
+
+If the option is set to 0, all of the hosts will be run simultaneously.
+
+If the option is set to N, N simultaneous connections will be allowed.
+
+  OPTION = 'ssh:XXX'
+  ------------------
+
+When running a command on a remote host via. ssh, the Net::OpenSSH module
+is used.
+
+Every option that can be passed to the 'new' method can be set here.  For
+example, if you want to call Net::OpenSSH as:
+
+   $ssh = Net::OpenSSH->new($host, user => $user_name);
+
+just set the option:
+
+   ssh:user = $user_name
+
+=item B<cmd>
+
+   $err=$obj->cmd($cmd [,\%options], $cmd [,\%options], ...);
+
+Here, each $cmd is a string containing a command, or a listref where each
+element in the list is a command.
+
+In the second form, the list of commands are alternates to try until
+one succeeds, and the command only fails if all of the alternates
+fail.
+
+This might be used to specify different paths to an executable, or
+different forms that might be available on different operating
+systems.
+
+For example, if you wanted to run a command to get a web site, and
+you didn't know which of curl, wget, or lftp were available, you might
+use something like this:
+
+   $err = $obj->cmd([ "wget $URL", "curl $URL", "lftp $URL"]);
+
+and in this case, it would try wget, and if that failed, it would
+try curl, and if that failed, it would try lftp.  The command will only
+fail if all three alternates fail.  Of course, it is likely you would
+need to add other options to the three commands to get similar behavior
+from the three alternative, but this example illustrates the use of
+alternates.
+
+Options are:
+
+   dire    => $dire
+   flow    => 1
+
+The 'dire' option refers to the directory which this single command
+should be executed in.
+
+If a command is one which is used to control the flow of a script
+(such as an if-else-fi structure or a do-while loop), you must use the
+'flow' option for all parts of it so it so it will handle command
+echoing, error handling, and output handling correctly.  For example,
+you need to do:
+
+   $obj->cmd('if [ "$i" = "1" ]; then', { 'flow' => 1 },
+             ...
+             'fi', { 'flow' => 1 });
+
+If the 'flow' option is used, 'dire' may not be used, and only a
+single command (i.e. no alternates) may be given.
+
+All of the commands stored in $obj will be run in a single shell, so
+it is fine to gather information in one command and store it in a
+shell variable for use in a later command.  It is not necessary to
+include a trailing semi-colon on the command as these will be added
+automatically (but not to commands of type 'flow').
+
+An error is returned if any of the arguments are invalid.
+
+=back
+
+=head1 KNOWN PROBLEMS
+
+=over 4
+
+=item B<Minimal support for complex scripts>
+
+These methods work best for simple lists of commands.  When you wish
+to add flow (if...then...else, while...do, etc.) these must be marked
+as such using the 'flow' option in the 'cmd' method.
+
+=back
+
+=head1 LICENSE
+
+This script is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+
+=head1 AUTHOR
+
+Sullivan Beck (sbeck@cpan.org)
+
+=cut

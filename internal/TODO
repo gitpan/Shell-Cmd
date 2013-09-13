@@ -1,0 +1,33 @@
+
+o Add an option to override STDOUT/STDERR settings on a per-command
+  basis so we don't automatically add command redirection on these.
+  For exmple:
+    'ls > /tmp/out'  should not get '> /dev/null' added to it.
+
+o Add the ability to run commands up to a failure, and then just echo
+  any remaining commands.
+
+o Add the abiltiy when just printing out the script to omit the extra
+  stuff (like error trapping) and just print the commands.
+
+o Add a 'backout' command.  If the command fails, then it will execute
+  the backout commands (in reverse order) to back out the changes.  An
+  optin exists to say whether the backout command will execute if THIS
+  command fails, or only if future commands fail.
+
+o Allow flow to be 'open', 'close', or 'same'.
+ 
+  If 'open', then this prints out at current indentation, and future
+  commands indent further.  Use this to specify 'if (...) ;then'.
+ 
+  If 'close', then this decreases the indentation for this and future
+  commands.  Use this to specify 'fi'.
+ 
+  If 'same', then this temporarily decreases the indentation for this,
+  but leaves it alone for future commands.  Use this for 'else' or 'elsif'.
+
+o Add a per-command retry option (with an optional sleep) for commands
+  that may fail once.
+
+o In ssh, add a list of pre-commands that are run on the local host before
+  ssh is started up (such as initializing an ssh-key).

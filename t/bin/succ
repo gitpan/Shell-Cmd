@@ -1,0 +1,5 @@
+#!/bin/sh
+
+echo "This will succeed"
+echo "It will give a warning" >&2
+exit 0

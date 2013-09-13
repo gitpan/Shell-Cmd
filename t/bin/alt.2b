@@ -1,0 +1,4 @@
+#!/bin/sh
+
+echo "Alternate 2b will succeed"
+exit 0

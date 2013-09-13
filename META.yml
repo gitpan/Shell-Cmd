@@ -1,0 +1,28 @@
+---
+abstract: 'run shell commands with enhanced support'
+author:
+  - 'Sullivan Beck (sbeck@cpan.org)'
+build_requires:
+  ExtUtils::MakeMaker: 0
+configure_requires:
+  ExtUtils::MakeMaker: 0
+dynamic_config: 1
+generated_by: 'ExtUtils::MakeMaker version 6.64, CPAN::Meta::Converter version 2.132140'
+license: unknown
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: Shell-Cmd
+no_index:
+  directory:
+    - t
+    - inc
+requires:
+  Capture::Tiny: 0
+  ExtUtils::MakeMaker: 0
+  File::Basename: 0
+  Net::OpenSSH: 0
+  Parallel::ForkManager: 0
+  Test::Inter: 0
+  Test::More: 0
+version: 1.00
