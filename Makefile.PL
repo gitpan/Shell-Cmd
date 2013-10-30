@@ -16,7 +16,7 @@ my %requires = (
 
 WriteMakefile(
         NAME             => 'Shell::Cmd',
-        VERSION          => '1.00',
+        VERSION          => '1.10',
         ($] >= 5.008
         ? (ABSTRACT=>'run shell commands with enhanced support',
            AUTHOR  =>'Sullivan Beck (sbeck@cpan.org)')
@@ -24,14 +24,4 @@ WriteMakefile(
         'dist' => {COMPRESS=>'gzip',SUFFIX=>'gz'},
         PL_FILES  => {},
         PREREQ_PM => \%requires,
-        EXE_FILES => [
-           'examples/dry-run.pl',
-           'examples/ssh-parallel-script.pl',
-           'examples/ssh-dry-run.pl',
-           'examples/run.pl',
-           'examples/dry-run-2.pl',
-           'examples/ssh-parallel-run.pl',
-           'examples/run-2.pl',
-           'examples/ssh-run.pl',
-        ],
 );

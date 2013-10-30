@@ -25,7 +25,7 @@ my $class = Module::Build->subclass(
 
 my $build = $class->new(
         license            => 'perl',
-        dist_version       => '1.00',
+        dist_version       => '1.10',
         dist_author        => 'Sullivan Beck <sbeck@cpan.org>',
         module_name        => 'Shell::Cmd',
         dist_abstract      => 'run shell commands with enhanced support',
@@ -33,16 +33,6 @@ my $build = $class->new(
         build_requires     => \%build_mods,
         configure_requires => \%config_mods,
         sign               => 1,
-        script_files => [
-           'examples/dry-run.pl',
-           'examples/ssh-parallel-script.pl',
-           'examples/ssh-dry-run.pl',
-           'examples/run.pl',
-           'examples/dry-run-2.pl',
-           'examples/ssh-parallel-run.pl',
-           'examples/run-2.pl',
-           'examples/ssh-run.pl',
-        ],
 );
 
 $build->create_build_script;

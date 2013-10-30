@@ -1,0 +1,19 @@
+#!/bin/sh
+
+if [ ! -f "touch_1" ]; then
+   echo "Running first time"
+   echo > touch_1
+   echo "Failing first time" >&2
+   exit 1
+fi
+
+if [ ! -f "touch_2" ]; then
+   echo "Running second time"
+   echo > touch_2
+   echo "Failing second time" >&2
+   exit 1
+fi
+
+echo "Running third time"
+rm touch_1 touch_2
+exit 0

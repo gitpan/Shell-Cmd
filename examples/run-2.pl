@@ -8,7 +8,7 @@ $obj->cmd("if [ -d /tmp ]; then",  { "flow" => 1 },
           "   ls /tmp",
           "fi",                    { "flow" => 1 },
          );
-($script) = $obj->run();
+($err) = $obj->run();
 
-print $script;
+print "ERROR: $err\n";
 

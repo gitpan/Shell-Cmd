@@ -1,6 +1,7 @@
 Build.PL
 examples/dry-run-2.pl
 examples/dry-run.pl
+examples/retry.pl
 examples/run-2.pl
 examples/run.pl
 examples/ssh-dry-run.pl
@@ -9,6 +10,7 @@ examples/ssh-parallel-script.pl
 examples/ssh-run.pl
 HISTORY
 INSTALL
+internal/build.yaml
 internal/TODO
 lib/Shell/Cmd.pm
 lib/Shell/Cmd.pod
@@ -18,19 +20,24 @@ MANIFEST			This list of files
 META.json
 META.yml
 README
-t/bin/alt.1a
-t/bin/alt.1b
-t/bin/alt.2a
-t/bin/alt.2b
-t/bin/alt.3a
-t/bin/alt.3b
+t/alt.fail.t
+t/alt.succ.t
 t/bin/fail
+t/bin/fail.2
+t/bin/fail_twice
 t/bin/succ
-t/cmd.simple.t
-t/dir_1/a1
-t/dir_1/b1
-t/dir_2/a2
+t/bin/succ.2
+t/chars.t
+'t/dir 1/a1'
+'t/dir 1/b1'
+t/dry-run.t
+t/opt.failure.t
+t/opt.flow.t
+t/opt.misc.t
+t/opt.output.t
 t/pod.t
 t/pod_coverage.t
+t/retry.t
 t/runtests
 t/runtests.bat
+t/testfunc.pl

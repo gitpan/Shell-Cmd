@@ -15,17 +15,20 @@ DESCRIPTION
 
     In the simplest form, running shell commands can be done very simply
     using the system() call, backticks, or several other ways, but I usually
-    find myself wanting to do a bit more, and I frequently ended up writing
-    a subroutine to run the shell command(s) with added functionality.
+    find myself wanting to do a bit (and sometimes a lot) more, especially
+    when I am writing a long-term script that I want to be robust. In these
+    cases, I frequently ended up writing a subroutine to run the shell
+    command(s) for me with added functionality.
 
     This module is designed to take a list of shell commands and
-    automatically add some common desirable functionality to them including:
+    automatically turn them into a shell script (using only basic shell
+    commands) which adds some common desirable functionality including:
 
        o  Keeping or discarding STDOUT and STDERR (in any
           combination).
-       o  Echoing commands if desired.
-       o  Dry-run mode where the shell script is created, but
-          not actually run.
+       o  Echoing commands as they are run if desired.
+       o  Dry-run mode where the shell script is created and
+          returned, but not actually run.
        o  Error trapping and handling at a per-command level.
        o  Setting up environment variables for the commands.
        o  Alternate commands that do the same thing so that you
@@ -38,7 +41,7 @@ DESCRIPTION
           when passing the command to ssh.
 
     This module is designed to run multiple commands in a single shell,
-    adding standard shell commands automatically to handle the desired
+    wrapping them in standard shell commands to automatically add this
     functionality.
 
 METHODS
@@ -65,7 +68,8 @@ METHODS
            ($script) = $obj->run();
 
         In this mode, the commands are not actually executed. Instead, the
-        script is built and returned.
+        script is built and returned. By default, the script returned is the
+        full script that adds all of the functionality above.
 
         If $obj is in 'run' mode, the method should be called as:
 
@@ -74,7 +78,8 @@ METHODS
         The script is run, and output is sent directly to STDOUT and STDERR
         as appropriate for the options specified.
 
-        The return value of the method is the exit code of the script.
+        The return value of the method is the exit code of the script (which
+        is the exit code of the final failing command).
 
         If $obj is in 'script' mode, the output from the commands are kept
         for further analysis. The method should be called as:
@@ -165,12 +170,54 @@ METHODS
         This can be used to set some options about what will be done when
         the commands are run.
 
-        %options is a hash of (OPTION => VALUE). The following OPTIONS
-        exist:
+        The hash is of the form:
 
-        OPTION = run ------------
+           %options = ( OPTION => VALUE,
+                        OPTION => VALUE, ...)
 
-        The 'run' option determines how the commands will be handled by the
+        The options are defined in the GLOBAL OPTIONS section below.
+
+    cmd
+           $err=$obj->cmd($cmd [,\%options], $cmd [,\%options], ...);
+
+        Here, each $cmd is a string containing a command, or a listref where
+        each element in the list is a command.
+
+        In the second form, the list of commands are alternates to try until
+        one succeeds, and the command only fails if all of the alternates
+        fail.
+
+        This might be used to specify different paths to an executable, or
+        different forms that might be available on different operating
+        systems.
+
+        For example, if you wanted to run a command to get the contents of a
+        web site, and you didn't know which of curl, wget, or lftp were
+        available, you might use something like this:
+
+           $err = $obj->cmd([ "wget $URL", "curl $URL", "lftp $URL"]);
+
+        and in this case, it would try wget, and if that failed, it would
+        try curl, and if that failed, it would try lftp. The command will
+        only fail if all three alternates fail.
+
+        Each command can have options passed in. These options apply only to
+        a single command, and are described in the PER-COMMAND OPTIONS
+        section below.
+
+        All of the commands stored in $obj will be run in a single shell, so
+        it is fine to gather information in one command and store it in a
+        shell variable for use in a later command. Also, it is not necessary
+        (or desirable) to include a trailing semi-colon on the command as
+        these will be added automatically where appropriate.
+
+        An error is returned if any of the arguments are invalid.
+
+GLOBAL OPTIONS
+    The following global options exist can can be set using the options
+    method:
+
+    run The run option determines how the commands will be handled by the
         run method. The following values are available.
 
            dry-run
@@ -193,10 +240,8 @@ METHODS
         the output from commands that succeed and keep only the output for
         the one that failed.
 
-          OPTION = 'output'
-          -----------------
-
-        The 'output' option can be one of the following:
+    output
+        The output option can be one of the following:
 
            both
            merged
@@ -219,10 +264,8 @@ METHODS
         combination of the 'output' and 'f-output' options as described
         next.
 
-          OPTION = 'f-output'
-          -------------------
-
-        The 'f-output' option can be one of the following:
+    f-output
+        The f-output option can be one of the following:
 
            f-both
            f-merged
@@ -251,9 +294,17 @@ METHODS
 
         The default to these are 'both' and 'f-both'.
 
-          OPTION = 'echo'
-          ---------------
+    simple
+        The simple option is ignored except in dry-run mode, or in the case
+        of printing commands past a failure. The script produced in dry-run
+        mode can either be the full script (containing all of the shell
+        commands necessary to implement the functionality) or a much more
+        simple script containing only the shell commands entered explicitly
+        without the extra shell commands to add error checking and other
+        functionality. If the 'simple' option is true, the simple script is
+        produced.
 
+    echo
         The 'echo' option is only used in 'run' and 'script' modes. With it,
         you can choose whether or not the commands should be displayed
         before they are run.
@@ -271,9 +322,26 @@ METHODS
         this option, commands that succeed will not be displayed, but a
         command that fails will be displayed.
 
-          OPTION = 'ssh_num'
-          ------------------
+    failure
+        When a command fails, there are several alternatives that can be
+        done. Values for this option are:
 
+           exit
+           display
+           continue
+
+        The default is 'exit'. With this option, the shell exits after a
+        failed command.
+
+        With the 'display' option, remaining commands are displayed (and the
+        'simple' option is used to determine how much detail is shown) but
+        they are not run.
+
+        With the 'continue' option, remaining command are executed, but the
+        overall exit values is still set to point at the first failed
+        command.
+
+    ssh_num
         When running a command on multiple hosts via. ssh, it is possible to
         run them serially (one at a time) or in parallel.
 
@@ -287,9 +355,7 @@ METHODS
         If the option is set to N, N simultaneous connections will be
         allowed.
 
-          OPTION = 'ssh:XXX'
-          ------------------
-
+    ssh:XXX
         When running a command on a remote host via. ssh, the Net::OpenSSH
         module is used.
 
@@ -302,61 +368,80 @@ METHODS
 
            ssh:user = $user_name
 
-    cmd
-           $err=$obj->cmd($cmd [,\%options], $cmd [,\%options], ...);
+PER-COMMAND OPTIONS
+    The following options exists that can be applied to individual commands.
+    They can be set in the cmd method.
 
-        Here, each $cmd is a string containing a command, or a listref where
-        each element in the list is a command.
+    dire
+        The dire option refers to the directory which this single command
+        should be executed in. The value of the option is the directory.
 
-        In the second form, the list of commands are alternates to try until
-        one succeeds, and the command only fails if all of the alternates
-        fail.
+        This will basically wrap a command in:
 
-        This might be used to specify different paths to an executable, or
-        different forms that might be available on different operating
-        systems.
+           CURR_DIR=`pwd`
+           cd $dire
+           COMMAND
+           cd $CURR_DIR
 
-        For example, if you wanted to run a command to get a web site, and
-        you didn't know which of curl, wget, or lftp were available, you
-        might use something like this:
-
-           $err = $obj->cmd([ "wget $URL", "curl $URL", "lftp $URL"]);
-
-        and in this case, it would try wget, and if that failed, it would
-        try curl, and if that failed, it would try lftp. The command will
-        only fail if all three alternates fail. Of course, it is likely you
-        would need to add other options to the three commands to get similar
-        behavior from the three alternative, but this example illustrates
-        the use of alternates.
-
-        Options are:
-
-           dire    => $dire
-           flow    => 1
-
-        The 'dire' option refers to the directory which this single command
-        should be executed in.
+    flow
+        The value of the flow option can be '+', '-', or '='.
 
         If a command is one which is used to control the flow of a script
         (such as an if-else-fi structure or a do-while loop), you must use
-        the 'flow' option for all parts of it so it so it will handle
-        command echoing, error handling, and output handling correctly. For
-        example, you need to do:
+        the flow option for all parts of it so it so it will handle command
+        echoing, error handling, and output handling correctly (none of
+        which apply to flow commands). It will also indent things correctly
+        in the script to make it easier to read.
 
-           $obj->cmd('if [ "$i" = "1" ]; then', { 'flow' => 1 },
+        If the flow option is used, the dire option may not be used, and
+        only a single command (i.e. no alternates) may be given.
+
+        The value of 'flow' may be '+' (which means you are beginning a flow
+        structure), '-' meaning you are closing the flow structure, or '='
+        meaning you are continuing the current flow structure.
+
+        For example, you could have:
+
+           $obj->cmd('if [ "\$i" = "1" ]; then',   { 'flow' => '+' },
                      ...
-                     'fi', { 'flow' => 1 });
+                     'elif [ "\$i" = "2" ]; then', { 'flow' => '=' },
+                     ...
+                     'fi',                         { 'flow' => '-' }
+                    );
 
-        If the 'flow' option is used, 'dire' may not be used, and only a
-        single command (i.e. no alternates) may be given.
+    noredir
+        If the noredir option is included, no command line redirection is
+        done for this command. Most commands automatically redirect STDOUT
+        and STDERR based on the output and f-output global options.
 
-        All of the commands stored in $obj will be run in a single shell, so
-        it is fine to gather information in one command and store it in a
-        shell variable for use in a later command. It is not necessary to
-        include a trailing semi-colon on the command as these will be added
-        automatically (but not to commands of type 'flow').
+        If the command explicitly sends these to somewhere (such as a log
+        file or temporary file), use the noredir option so automatic
+        redirection is not done.
 
-        An error is returned if any of the arguments are invalid.
+    retry, sleep
+        The retry and sleep options can be used to retry a command.
+
+        Sometimes, a command may fail but running it a second time can
+        succeed. Often, a command completes, but for various reasons, it
+        takes a certain amount of time after the command completes for the
+        full results to take effect. A later command might be run before
+        those results have taken effect, but rerunning it a few seconds
+        later would succeed.
+
+        With the retry option, you can retry a command. The value of the
+        retry option should be an integer (N). If N is greater than 1, the
+        command will be run up to N times total. Any other value of N will
+        be ignored, and the command will run only a single time.
+
+        There can be an optional sleep time between running the command. The
+        optional sleep option (which should also be an integer) sets the
+        number of seconds between retries. If the value is 0, or not an
+        integer, there will be no delay between retries.
+
+        This command will be marked as failed only if all of the retries
+        fail.
+
+        You cannot retry a flow command.
 
 KNOWN PROBLEMS
     Minimal support for complex scripts
