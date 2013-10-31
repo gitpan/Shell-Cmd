@@ -13,7 +13,7 @@ use Net::OpenSSH;
 use Parallel::ForkManager 0.7.6;
 
 our($VERSION);
-$VERSION = "1.10";
+$VERSION = "1.11";
 
 ###############################################################################
 # METHODS
@@ -811,8 +811,7 @@ sub _script_output {
                        qq(${next_ind}SC_RETRIES=$fail_n;),
                        qq(${curr_ind}fi);
 
-         push @script, qq(${curr_ind}declare -i SC_TRY;),
-                       qq(${curr_ind}SC_TRY=0;),
+         push @script, qq(${curr_ind}SC_TRY=0;),
                        qq(${curr_ind}while [ \$SC_TRY -lt \$SC_RETRIES ]; do);
          _ind_plus();
       }
@@ -859,7 +858,7 @@ sub _script_output {
          push @script, qq(${curr_ind}if [ \$SC_ALT_FAILED -eq 0 ]; then),
                        qq(${next_ind}SC_RETRIES=0;),
                        qq(${curr_ind}fi),
-                       qq(${curr_ind}SC_TRY=\$SC_TRY+1;);
+                       qq(${curr_ind}SC_TRY=`expr \$SC_TRY + 1`;);
 
          if ($sleep) {
             push @script, qq(${curr_ind}if [ \$SC_TRY -lt \$SC_RETRIES ]; then),

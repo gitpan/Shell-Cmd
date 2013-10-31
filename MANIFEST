@@ -1,4 +1,5 @@
 Build.PL
+Changes
 examples/dry-run-2.pl
 examples/dry-run.pl
 examples/retry.pl
@@ -8,7 +9,6 @@ examples/ssh-dry-run.pl
 examples/ssh-parallel-run.pl
 examples/ssh-parallel-script.pl
 examples/ssh-run.pl
-HISTORY
 INSTALL
 internal/build.yaml
 internal/TODO

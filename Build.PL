@@ -25,7 +25,7 @@ my $class = Module::Build->subclass(
 
 my $build = $class->new(
         license            => 'perl',
-        dist_version       => '1.10',
+        dist_version       => '1.11',
         dist_author        => 'Sullivan Beck <sbeck@cpan.org>',
         module_name        => 'Shell::Cmd',
         dist_abstract      => 'run shell commands with enhanced support',

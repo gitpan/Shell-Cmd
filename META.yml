@@ -25,4 +25,4 @@ requires:
   Parallel::ForkManager: 0
   Test::Inter: 0
   Test::More: 0
-version: 1.10
+version: 1.11

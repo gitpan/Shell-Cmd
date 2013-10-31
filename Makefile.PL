@@ -16,7 +16,7 @@ my %requires = (
 
 WriteMakefile(
         NAME             => 'Shell::Cmd',
-        VERSION          => '1.10',
+        VERSION          => '1.11',
         ($] >= 5.008
         ? (ABSTRACT=>'run shell commands with enhanced support',
            AUTHOR  =>'Sullivan Beck (sbeck@cpan.org)')
