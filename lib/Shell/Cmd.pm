@@ -13,7 +13,7 @@ use Net::OpenSSH;
 use Parallel::ForkManager 0.7.6;
 
 our($VERSION);
-$VERSION = "1.11";
+$VERSION = "1.12";
 
 ###############################################################################
 # METHODS
@@ -46,15 +46,16 @@ sub flush {
    $$self{'env'}      = []        if ($all  ||  $opts{'env'});
 
    if ($all  ||  $opts{'opts'}) {
-      $$self{'run'}      = 'run';
-      $$self{'output'}   = 'both';
-      $$self{'f-output'} = 'f-both';
-      $$self{'echo'}     = 'noecho';
-      $$self{'simple'}   = 0;
-      $$self{'failure'}  = 'exit';
+      $$self{'run'}       = 'run';
+      $$self{'output'}    = 'both';
+      $$self{'f-output'}  = 'f-both';
+      $$self{'echo'}      = 'noecho';
+      $$self{'simple'}    = 0;
+      $$self{'failure'}   = 'exit';
 
-      $$self{'ssh_opts'} = {};
-      $$self{'ssh_num'}  = 1;
+      $$self{'ssh_opts'}  = {};
+      $$self{'ssh_num'}   = 1;
+      $$self{'ssh_sleep'} = 0;
    }
 
    # [ [CMD, %OPTS], [CMD, %OPTS], ... ]
@@ -111,10 +112,6 @@ sub options {
             next OPT;
          }
 
-      } elsif ($opt eq 'simple') {
-         $$self{$opt} = $val;
-         next OPT;
-
       } elsif ($opt eq 'echo') {
 
          if ($val =~ /^(echo|noecho|failed)$/) {
@@ -133,7 +130,10 @@ sub options {
          $$self{'ssh_opts'}{$opt} = $val;
          next OPT;
 
-      } elsif ($opt eq 'ssh_num') {
+      } elsif ($opt eq 'simple'  ||
+               $opt eq 'ssh_num' ||
+               $opt eq 'ssh_sleep'
+              ) {
          $$self{$opt} = $val;
          next OPT;
 
@@ -168,7 +168,7 @@ sub cmd {
       }
 
       foreach my $opt (keys %options) {
-         if ($opt !~ /^(dire|flow|noredir|retry|sleep)$/) {
+         if ($opt !~ /^(dire|flow|noredir|retry|sleep|check)$/) {
             $self->_print(1,"Invalid cmd option: $opt");
             return 1;
          }
@@ -334,6 +334,14 @@ sub _ssh {
    my($self,$script,$stdout,$stderr,$host) = @_;
 
    my $ssh = Net::OpenSSH->new($host, %{ $$self{'ssh_opts'} });
+
+   #
+   # If we're sleeping, do so.
+   #
+
+   if ($$self{'ssh_sleep'}) {
+      sleep(int(rand($$self{'ssh_sleep'})));
+   }
 
    #
    # If it's running in real-time, do so.
@@ -1008,6 +1016,7 @@ sub _script_output {
       my($self,$cmd,$output,$first,%options) = @_;
       my(@script);
 
+      my $check         = ($options{'check'} ? $options{'check'} : '');
       my $noredir       = ($options{'noredir'} ? 1 : 0);
       my $flow          = ($options{'flow'}  ? $options{'flow'} : 0);
       $flow             = '='  if ($flow  &&  $flow !~ /^[=+-]$/);
@@ -1015,7 +1024,7 @@ sub _script_output {
                            ? 1 : 0);
       $output           = ''   if ($noredir);
 
-      # We want to generate the following script:
+      # We want to generate essentially the following script:
       #
       #    CMD1
       #    if [ "$?" != 0 ]; then
@@ -1030,6 +1039,9 @@ sub _script_output {
       #    fi
       #
       # where CMDn is the last alternate and X is the command number.
+      #
+      # If we have a 'check' option, we'll need to run that
+      # command immediately after every CMDi.
 
       if ($flow) {
          if      ($flow eq '+') {
@@ -1049,10 +1061,16 @@ sub _script_output {
          if ($first  ||  $simple_script) {
             push @script, qq(${curr_ind}SC_ALT_PASSED=0;)  if (! $simple_script);
             push @script, qq(${curr_ind}$cmd $output;);
+            if ($check) {
+               push @script, qq(${curr_ind}$check $output;);
+            }
          } else {
             push @script,
               qq(${curr_ind}if [ \$SC_ALT_PASSED -eq 0 ]; then),
-              qq(${next_ind}$cmd $output;),
+              qq(${next_ind}$cmd $output;);
+            push @script,
+              qq(${next_ind}$check $output;)  if ($check);
+            push @script,
               qq(${curr_ind}fi);
          }
 

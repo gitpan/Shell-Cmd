@@ -1,47 +1,53 @@
 {
    "abstract" : "run shell commands with enhanced support",
    "author" : [
-      "Sullivan Beck (sbeck@cpan.org)"
+      "Sullivan Beck <sbeck@cpan.org>"
    ],
    "dynamic_config" : 1,
-   "generated_by" : "ExtUtils::MakeMaker version 6.64, CPAN::Meta::Converter version 2.132140",
+   "generated_by" : "Module::Build version 0.4007, CPAN::Meta::Converter version 2.132830",
    "license" : [
-      "unknown"
+      "perl_5"
    ],
    "meta-spec" : {
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
       "version" : "2"
    },
    "name" : "Shell-Cmd",
-   "no_index" : {
-      "directory" : [
-         "t",
-         "inc"
-      ]
-   },
    "prereqs" : {
       "build" : {
          "requires" : {
-            "ExtUtils::MakeMaker" : "0"
+            "Module::Build" : "0.21"
          }
       },
       "configure" : {
          "requires" : {
-            "ExtUtils::MakeMaker" : "0"
+            "Module::Build" : "0.21"
          }
       },
       "runtime" : {
          "requires" : {
             "Capture::Tiny" : "0",
-            "ExtUtils::MakeMaker" : "0",
-            "File::Basename" : "0",
             "Net::OpenSSH" : "0",
             "Parallel::ForkManager" : "0",
-            "Test::Inter" : "0",
-            "Test::More" : "0"
+            "perl" : "5.008"
          }
       }
    },
+   "provides" : {
+      "Shell::Cmd" : {
+         "file" : "lib/Shell/Cmd.pm",
+         "version" : "1.12"
+      }
+   },
    "release_status" : "stable",
-   "version" : "1.11"
+   "resources" : {
+      "license" : [
+         "http://dev.perl.org/licenses/"
+      ]
+   },
+   "version" : "1.12",
+   "x_test_requires" : {
+      "Test::Inter" : "0",
+      "Test::More" : "0"
+   }
 }

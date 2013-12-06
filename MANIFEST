@@ -8,6 +8,7 @@ examples/run.pl
 examples/ssh-dry-run.pl
 examples/ssh-parallel-run.pl
 examples/ssh-parallel-script.pl
+examples/ssh-parallel-sleep.pl
 examples/ssh-run.pl
 INSTALL
 internal/build.yaml
@@ -18,7 +19,6 @@ LICENSE
 Makefile.PL
 MANIFEST			This list of files
 META.json
-META.yml
 README
 t/alt.fail.t
 t/alt.succ.t
@@ -31,6 +31,7 @@ t/chars.t
 't/dir 1/a1'
 't/dir 1/b1'
 t/dry-run.t
+t/opt.check.t
 t/opt.failure.t
 t/opt.flow.t
 t/opt.misc.t
@@ -41,3 +42,4 @@ t/retry.t
 t/runtests
 t/runtests.bat
 t/testfunc.pl
+META.yml

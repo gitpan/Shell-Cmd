@@ -2,6 +2,7 @@ perl -I../lib alt.fail.t 1
 perl -I../lib alt.succ.t 1
 perl -I../lib chars.t 1
 perl -I../lib dry-run.t 1
+perl -I../lib opt.check.t 1
 perl -I../lib opt.failure.t 1
 perl -I../lib opt.flow.t 1
 perl -I../lib opt.misc.t 1

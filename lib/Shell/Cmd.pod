@@ -38,7 +38,9 @@ commands) which adds some common desirable functionality including:
    o  Echoing commands as they are run if desired.
    o  Dry-run mode where the shell script is created and
       returned, but not actually run.
-   o  Error trapping and handling at a per-command level.
+   o  Error trapping and handling at a per-command level
+      even though all of the commands are run in a
+      single shell.
    o  Setting up environment variables for the commands.
    o  Alternate commands that do the same thing so that you
       can run the scripts more easily on multiple platforms.
@@ -368,7 +370,7 @@ exit values is still set to point at the first failed command.
 
 =item B<ssh_num>
 
-When running a command on multiple hosts via. ssh, it is possible to run
+When running a command on multiple hosts via SSH, it is possible to run
 them serially (one at a time) or in parallel.
 
 This option can be set to a number 0 or more.  If the number is 1, then
@@ -378,6 +380,16 @@ be contacted serially.
 If the option is set to 0, all of the hosts will be run simultaneously.
 
 If the option is set to N, N simultaneous connections will be allowed.
+
+=item B<ssh_sleep>
+
+When running a command on multiple hosts via SSH, it is sometimes
+desirable to stagger them slightly so multiple copies are running at
+the same time, but not at EXACTLY the same time.
+
+If this option is set to 0 (the default), all of the commands will be
+run with no delay.  If it is set to the value N, commands will sleep
+a random amount of time (from 0 to N seconds) before running.
 
 =item B<ssh:XXX>
 
@@ -474,6 +486,22 @@ integer, there will be no delay between retries.
 This command will be marked as failed only if all of the retries fail.
 
 You cannot retry a B<flow> command.
+
+=item B<check>
+
+Sometimes, a command is written such that the exit code does not
+accurately reflect whether the command failed or not.  It may produce
+a zero exit code but still have failed, or it may have succeeded but
+still produce an error code.
+
+In these cases, you can supply a command with this option which will
+check the result of the command and set the error flag appropriately.
+
+If the command succeeded, the error flag should be set to zero.  If
+it failed, it should be set to something non-zero.
+
+If this is given for a command which has alternatives, it will be run
+after every alternative.
 
 =back
 

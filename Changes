@@ -18,3 +18,7 @@ Any suggestions, bug reports, or donations :-) should be sent to me.
    - Changed HISTORY file to new Changes specification.  Suggested by
      RT 89910.
 
+1.12  2013-12-06
+   - New options:
+      ssh_sleep, check
+
