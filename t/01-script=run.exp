@@ -1,0 +1,55 @@
+SC_FAILED=0;
+SC_EXIT=0;
+SC_VAR_1="val_1";
+SC_VAR_2="val_2";
+export SC_VAR_1 SC_VAR_2;
+
+SC_DIRE="/tmp";
+if [ -d "$SC_DIRE" ]; then
+   cd "$SC_DIRE";
+else
+   echo "Directory does not exist: $SC_DIRE" >&2;
+   SC_FAILED=1;
+fi;
+#
+# Command 2
+#
+SC_CMD_PASSED=0;
+#
+# Command 2.1
+#
+if [ $SC_CMD_PASSED -eq 0 ] && [ $SC_FAILED -eq 0 ]; then
+   TESTDIR/bin/succ ;
+   CMD_EXIT=$?;
+   if [ $CMD_EXIT -eq 0 ]; then
+      SC_CMD_PASSED=1;
+   elif [ $SC_EXIT -eq 0 ]; then
+      SC_EXIT=$CMD_EXIT;
+   fi
+fi
+
+if [ $SC_FAILED -eq 0 ] && [ $SC_CMD_PASSED -eq 0 ]; then
+   SC_FAILED=2;
+fi
+#
+# Command 3
+#
+SC_CMD_PASSED=0;
+#
+# Command 3.1
+#
+if [ $SC_CMD_PASSED -eq 0 ] && [ $SC_FAILED -eq 0 ]; then
+   TESTDIR/bin/succ.2 ;
+   CMD_EXIT=$?;
+   if [ $CMD_EXIT -eq 0 ]; then
+      SC_CMD_PASSED=1;
+   elif [ $SC_EXIT -eq 0 ]; then
+      SC_EXIT=$CMD_EXIT;
+   fi
+fi
+
+if [ $SC_FAILED -eq 0 ] && [ $SC_CMD_PASSED -eq 0 ]; then
+   SC_FAILED=3;
+fi
+exit $SC_EXIT;
+

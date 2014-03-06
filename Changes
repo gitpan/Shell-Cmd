@@ -22,3 +22,19 @@ Any suggestions, bug reports, or donations :-) should be sent to me.
    - New options:
       ssh_sleep, check
 
+2.00  2014-03-06
+   - Significant rewrite including several backwards incompatible
+     changes.
+        changed script generating routines to be cleaner
+        generated script is now simpler to read
+   - Bug where exit code wasn't getting set correctly by script
+   - Change several options including:
+       changed 'run' option to 'mode'
+       changed 'f-output' values to not start with 'f-':
+       changed 'simple' to 'script' and adjusted meaning
+       changed 'echo' option (no longer applies to 'script' mode)
+       changed 'failure' option slightly (no longer refers to 'simple' option)
+   - Output of running in script mode changed (in a backward incompatible way)
+   - The dire/env methods can now query current values
+   - Added mode method
+

@@ -18,6 +18,7 @@ my %script_prereq = (
 );
 
 my %test_prereq = (
+   'IO::File'                 => '0',
    'Test::Inter'              => '0',
    'Test::More'               => '0',
 );
@@ -38,7 +39,7 @@ my $class = Module::Build->subclass(
 
 my $build = $class->new(
       module_name        => "Shell::Cmd",
-      dist_version       => "1.12",
+      dist_version       => "2.00",
       dist_abstract      => "run shell commands with enhanced support",
       license            => "perl",
       dist_author        => "Sullivan Beck <sbeck\@cpan.org>",

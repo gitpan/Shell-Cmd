@@ -1,19 +1,22 @@
-#!/bin/sh
+#!/usr/bin/perl
+$| = 1;
 
-if [ ! -f "touch_1" ]; then
-   echo "Running first time"
-   echo > touch_1
-   echo "Failing first time" >&2
-   exit 1
-fi
+if ( ! -f "fail_twice_1" ) {
+   print "Running first time\n";
+   open(OUT, ">fail_twice_1");
+   close(OUT);
+   warn  "Failing first time\n";
+   exit 20;
+}
 
-if [ ! -f "touch_2" ]; then
-   echo "Running second time"
-   echo > touch_2
-   echo "Failing second time" >&2
-   exit 1
-fi
+if ( ! -f "fail_twice_2" ) {
+   print "Running second time\n";
+   open(OUT, ">fail_twice_2");
+   close(OUT);
+   warn "Failing second time\n";
+   exit 21;
+}
 
-echo "Running third time"
-rm touch_1 touch_2
-exit 0
+print "Running third time\n";
+unlink ("fail_twice_1","fail_twice_2");
+exit 0;

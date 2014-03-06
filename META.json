@@ -4,7 +4,7 @@
       "Sullivan Beck <sbeck@cpan.org>"
    ],
    "dynamic_config" : 1,
-   "generated_by" : "Module::Build version 0.4007, CPAN::Meta::Converter version 2.132830",
+   "generated_by" : "Module::Build version 0.4205",
    "license" : [
       "perl_5"
    ],
@@ -31,12 +31,19 @@
             "Parallel::ForkManager" : "0",
             "perl" : "5.008"
          }
+      },
+      "test" : {
+         "requires" : {
+            "IO::File" : "0",
+            "Test::Inter" : "0",
+            "Test::More" : "0"
+         }
       }
    },
    "provides" : {
       "Shell::Cmd" : {
          "file" : "lib/Shell/Cmd.pm",
-         "version" : "1.12"
+         "version" : "2.00"
       }
    },
    "release_status" : "stable",
@@ -45,9 +52,5 @@
          "http://dev.perl.org/licenses/"
       ]
    },
-   "version" : "1.12",
-   "x_test_requires" : {
-      "Test::Inter" : "0",
-      "Test::More" : "0"
-   }
+   "version" : "2.00"
 }

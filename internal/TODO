@@ -2,3 +2,23 @@ o Add a 'backout' command.  If the command fails, then it will execute
   the backout commands (in reverse order) to back out the changes.  An
   option exists to say whether the backout command will execute if THIS
   command fails, or only if future commands fail.
+
+o In non-script mode, if a command fails, and 'echo' is 'failure',
+  the failed command is echoe'd at the end (not perfect, but better
+  than nothing).  If it is a command with alternatives, we'll only
+  display the last alternative unfortunately.
+
+? Add SC_RAN_# and SC_FAILED_# set to 0/1 if command number # ran and
+  if it failed.
+
+? At the end, for backouts, do:
+    if SC_RAN_#  &&  SC_FAILED -lt #, run backout
+
+
+add checks for:
+
+   for i in 1..3 ;do
+      cmd
+      cmd with repeats
+   done
+

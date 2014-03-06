@@ -1,0 +1,15 @@
+This is the 'succ' command
+It will succeed
+This is the 'fail' command
+It will fail
+# COMMAND NOT RUN:
+TESTDIR/bin/succ.2
+# COMMAND NOT RUN:
+TESTDIR/bin/fail.2
+
+###STDERR
+It will give a warning
+It will give an error
+
+###EXIT
+10

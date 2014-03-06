@@ -57,31 +57,74 @@ METHODS
 
         Returns the version of this module.
 
+    cmd
+           $err=$obj->cmd($cmd [,\%options], $cmd [,\%options], ...);
+
+        This is used to add one or more commands to the list of commands
+        that will be executed.
+
+        Here, each $cmd is a string containing a command, or a listref where
+        each element in the list is a command.
+
+        In the second form, the list of commands are alternates to try until
+        one succeeds, and the command only fails if all of the alternates
+        fail. This might be used to specify different paths to an
+        executable, or different executables that perform essentially the
+        same function, but which might not all be available on all
+        platforms.
+
+        For example, if you wanted to run a command to get the contents of a
+        web site, and you didn't know which of curl, wget, or lftp were
+        available, you might use something like this:
+
+           $err = $obj->cmd([ "wget $URL", "curl $URL", "lftp $URL"]);
+
+        and in this case, it would try wget, and if that failed, it would
+        try curl, and if that failed, it would try lftp. The command will
+        only fail if all three alternates fail.
+
+        Each command (or list of alternates) can have options passed in.
+        These options apply only to this command (or list), and are
+        described in the PER-COMMAND OPTIONS section below.
+
+        All of the commands stored in $obj will be run in a single shell, so
+        it is fine to gather information in one command and store it in a
+        shell variable for use in a later command. Also, it is not necessary
+        (or desirable) to include a trailing semi-colon on the command as
+        these will be added automatically where appropriate.
+
+        An error is returned if any of the arguments are invalid.
+
     run
            $obj->run();
 
         This prepares a shell script based on the commands and options
         entered and runs it as appropriate. There are several different ways
         in which the commands can be run, and these are described in the
-        options method below.
+        options method below. The most important option is the run option
+        which sets the mode which determines the form of the script, and how
+        it is run.
 
-        If $obj is in 'dry-run' mode, the method should be called as:
-
-           ($script) = $obj->run();
-
-        In this mode, the commands are not actually executed. Instead, the
-        script is built and returned. By default, the script returned is the
-        full script that adds all of the functionality above.
-
-        If $obj is in 'run' mode, the method should be called as:
+        If $obj is in 'run' mode, the method can be called as either:
 
            ($err)    = $obj->run();
+           $err      = $obj->run();
 
-        The script is run, and output is sent directly to STDOUT and STDERR
-        as appropriate for the options specified.
+        In this mode, the script is run, and output is sent directly to
+        STDOUT and STDERR as appropriate for the options specified. In
+        essence, this generates a script and runs it with the system() call.
 
         The return value of the method is the exit code of the script (which
-        is the exit code of the final failing command).
+        is the exit code of a failing command).
+
+        If $obj is in 'dry-run' mode, the method should be called as either:
+
+           ($script) = $obj->run();
+           $script   = $obj->run();
+
+        In this mode, the commands are not actually executed. Instead, the
+        script is built and returned. The form of the script is determined
+        by the script option described below.
 
         If $obj is in 'script' mode, the output from the commands are kept
         for further analysis. The method should be called as:
@@ -90,25 +133,75 @@ METHODS
 
         Here, @out is a list of command output descriptors:
 
-           @out      = ( $err,
-                         [ $cmd_1, $out_1, $err_1 ],
-                         [ $cmd_2, $out_2, $err_2 ], ... )
+           @out      = ( FAILED_COMMAND, COMMAND_SUMMARY_1, COMMAND_SUMMARY_2, ... )
 
-        Each $cmd_i is either the i'th command, or an empty string (if you
-        are not echoing the commands).
+        Here, FAILED_COMMAND is the command number that failed. If
+        FAILED_COMMAND is 0, it means that the script completed
+        successfully. If it is -1, it means that the script initialization
+        failed before any of the commands were run. This typically means
+        that an invalid directory was specified with the dire method. If
+        FAILED_COMMAND is any other value, it will be an integer I. In this
+        case, the failed command is described in COMMAND_SUMMARY_I.
 
-        Each $out_i and $err_i are STDOUT and STDERR from the i'th command.
-        They will be empty if the appropriate output is not kept (i.e. if
-        STDOUT is not being kept, then $out_i will be empty in all cases).
+        For each command that ran, the output is returned along with
+        information about the command status. The format of each
+        COMMAND_SUMMARY is a listref of the form:
 
-        For example, if you are echoing commands, but only keeping STDOUT
-        and STDERR for failed commands, $cmd_i will contain the command in
-        all cases, but $out_i and $err_i will be empty for all but a command
-        that failed.
+           COMMAND_SUMMARY = [ CMD_NUM, STATUS, ALT_SUMMARY_1, ALT_SUMMARY_2, ... ]
 
-        If one of the commands fail, $err will be set to 1, and only the
-        commands that were tried will be included in @out (i.e. all of them
-        up to and including the one that failed).
+        CMD_NUM is the number of the command as it was entered with the cmd
+        method starting at 0. Each ALT_SUMMARY is the summary for one of the
+        alternates for this command.
+
+        STATUS is one of the strings:
+
+           ''       : Any command that succeeds will be given either a
+           succ       STATUS of an empty string, or the string 'succ'.
+                      If the B<failure> option is set to 'continue',
+                      all commands which succeed are given the empty
+                      string until a command fails.  Commands run after
+                      that are given a STATUS of 'succ'.
+
+                      If B<failure> is set to any other option, only
+                      the empty string is ever assigned as STATUS.
+
+           retried  : If a command is retried, all attempts may fail
+                      (except the final one) and it is not counted as
+                      a script failure.  These failing commands are
+                      given this STATUS.
+
+           exit     : The first command that actually fails is given
+           fail       the status 'exit'.  Other commands that fail
+                      (if the B<failure> option is set to 'continue')
+                      are given the status 'fail'.
+
+           disp     : This is only available if the B<failure>
+                      option is set to 'display', and will apply to
+                      all commands after the failing command.
+
+        It should be noted that if a command is retried multiple times, each
+        attemp will be returned as a separate COMMAND_SUMMARY structure.
+        Since any attempt but the final one failed, the status in those will
+        all be 'retried'. Only the final attempt will include a status
+        indicating success or failure for the command as a whole.
+
+        Each alternate will return a separate summary, also a listref, of
+        the form:
+
+           ALT_SUMMARY_i = [ CMD, EXIT, STDOUT, STDERR ]
+
+        CMD is the full command that was run.
+
+        EXIT is the exit value from that command. Note that if a command has
+        alternates, then one or more of them may fail (causing an exit value
+        to appear here) without causing the overall command to fail.
+
+        STDOUT and STDERR are the output produced by that command. Depending
+        on the values of the output and f-output options, one or both of
+        these may be empty, even if the command actually produced that type
+        of output. So, if the value of output is 'stderr', the the STDOUT
+        will be empty, even if the command produced something. Both are
+        listrefs of lines.
 
     ssh
            $obj->ssh(@hosts);
@@ -116,7 +209,7 @@ METHODS
         This behaves similar to the run method except it will run the
         commands on each host in @hosts using ssh.
 
-        In dry-run mode, the call is:
+        In 'dry-run' mode, the call is:
 
            @script = $obj->ssh(@hosts);
 
@@ -131,7 +224,7 @@ METHODS
         where $out1 is a reference to the list of output on the 1st host,
         etc.
 
-        Note that when running in parallel in real-time, the output that is
+        Note that when running in parallel in 'run' mode, the output that is
         printed to the terminal will be a mix of the output from each of the
         hosts the commands are being run on.
 
@@ -152,19 +245,35 @@ METHODS
     dire
            $err = $obj->dire($dire);
 
-        This method is used to specify the directory where all of the the
-        commands should be run. This can be overridden on a per-command
-        basis using the cmd method, but all commands not specifically set
-        will run in this directory.
+        This method is used to set the dire option. For a description,
+        please see the entry in GLOBAL OPTIONS below.
 
-        An error is returned if $dire does not exist.
+        You can also check the value that is set using:
+
+           $dire = $obj->dire();
+
+    mode
+           $err = $obj->mode($mode);
+
+        This method is used to set the mode option. For a description,
+        please see the entry in GLOBAL OPTIONS below.
+
+        You can also check the value that is set using:
+
+           $mode = $obj->mode();
 
     env
-           $obj->env($var [,$val]);
+           $obj->env(VAR, VAL, VAR, VAL, ...);
 
         This can be called any number of times to set some environment
-        variables. If $val is not passed in, the environment variable will
-        be explicitly unset.
+        variables. If $val is undef, the environment variable will be
+        explicitly unset.
+
+        You can also query the environment variables with:
+
+           @env = $obj->env();
+
+        It will return a list of ( VAR VAL VAR VAL ... ).
 
     options
            $err = $obj->options(%options);
@@ -179,47 +288,12 @@ METHODS
 
         The options are defined in the GLOBAL OPTIONS section below.
 
-    cmd
-           $err=$obj->cmd($cmd [,\%options], $cmd [,\%options], ...);
-
-        Here, each $cmd is a string containing a command, or a listref where
-        each element in the list is a command.
-
-        In the second form, the list of commands are alternates to try until
-        one succeeds, and the command only fails if all of the alternates
-        fail.
-
-        This might be used to specify different paths to an executable, or
-        different forms that might be available on different operating
-        systems.
-
-        For example, if you wanted to run a command to get the contents of a
-        web site, and you didn't know which of curl, wget, or lftp were
-        available, you might use something like this:
-
-           $err = $obj->cmd([ "wget $URL", "curl $URL", "lftp $URL"]);
-
-        and in this case, it would try wget, and if that failed, it would
-        try curl, and if that failed, it would try lftp. The command will
-        only fail if all three alternates fail.
-
-        Each command can have options passed in. These options apply only to
-        a single command, and are described in the PER-COMMAND OPTIONS
-        section below.
-
-        All of the commands stored in $obj will be run in a single shell, so
-        it is fine to gather information in one command and store it in a
-        shell variable for use in a later command. Also, it is not necessary
-        (or desirable) to include a trailing semi-colon on the command as
-        these will be added automatically where appropriate.
-
-        An error is returned if any of the arguments are invalid.
-
 GLOBAL OPTIONS
     The following global options exist can can be set using the options
     method:
 
-    run The run option determines how the commands will be handled by the
+    mode
+        The mode option determines how the commands will be handled by the
         run method. The following values are available.
 
            dry-run
@@ -242,6 +316,19 @@ GLOBAL OPTIONS
         the output from commands that succeed and keep only the output for
         the one that failed.
 
+        The mode option can also be set using the mode method.
+
+    dire
+        The dire option is use to specify the directory where all of the the
+        commands should be run. This can be overridden on a per-command
+        basis using the cmd method, but all commands not specifically set
+        will run in this directory.
+
+        This does NOT check the existence of the directory until the
+        commands are actually run since the commands may be run via. ssh.
+
+        The dire option can also be set using the dire method.
+
     output
         The output option can be one of the following:
 
@@ -251,9 +338,7 @@ GLOBAL OPTIONS
            stderr
            quiet
 
-        In the 'run' or 'dry-run' modes, these determine what output will be
-        displayed (in 'run' mode) or would be display if the script were run
-        (in 'dry-run' mode).
+        In the 'run' mode, these determine what output will be displayed.
 
         It can display only STDOUT, only STDERR, or both, or both can be
         discarded with the 'quiet' option. The default is to include 'both'.
@@ -269,11 +354,11 @@ GLOBAL OPTIONS
     f-output
         The f-output option can be one of the following:
 
-           f-both
-           f-merged
-           f-stdout
-           f-stderr
-           f-quiet
+           both
+           merged
+           stdout
+           stderr
+           quiet
 
         and is only used in 'script' mode.
 
@@ -281,9 +366,13 @@ GLOBAL OPTIONS
         the commands are run, so the output can be tailored to whether a
         command completed successfully or failed.
 
-        The 'output' option controls what output is given for commands that
-        completed successfully, and the 'f-output' option controls the
-        output given for a failed command.
+        The 'output' option controls what output is returned for commands
+        that completed successfully, and the 'f-output' option controls the
+        output given for a failed command. Note that if a command has
+        multiple alternatives, and one of them succeeds, the command is
+        treated as succeeding, and the output for all alternates (even the
+        individual ones that fail) will follow the rules of 'output' rather
+        than 'f-output'.
 
         It should be noted that since the command runs fully before it can
         be seen whether it failed or not, STDOUT/STDERR will either be
@@ -296,20 +385,30 @@ GLOBAL OPTIONS
 
         The default to these are 'both' and 'f-both'.
 
-    simple
-        The simple option is ignored except in dry-run mode, or in the case
-        of printing commands past a failure. The script produced in dry-run
-        mode can either be the full script (containing all of the shell
-        commands necessary to implement the functionality) or a much more
-        simple script containing only the shell commands entered explicitly
-        without the extra shell commands to add error checking and other
-        functionality. If the 'simple' option is true, the simple script is
-        produced.
+    script
+        The script option is used only in dry-run mode.
+
+        When commands are run in dry-run mode, a script is produced. The
+        form of that script is controlled by this option. The value may be
+        any of:
+
+           run
+           script
+           simple
+
+        If the value is 'run' (which is the default), the script produced
+        will be exactly the script produced in the 'run' mode. If the value
+        is 'script', the script will be the script produced in 'script'
+        mode.
+
+        If the value is 'simple', the script will simply be the list of
+        commands with the minimum necessary additions to handle directory
+        and environment variables. No additional scripting will be added to
+        do error checking or add other functionality.
 
     echo
-        The 'echo' option is only used in 'run' and 'script' modes. With it,
-        you can choose whether or not the commands should be displayed
-        before they are run.
+        The 'echo' option is used in 'run' mode. With it, you can choose
+        whether or not the commands should be displayed before they are run.
 
         The values are:
 
@@ -320,9 +419,9 @@ GLOBAL OPTIONS
         With 'echo' and 'noecho', commands will be displayed or NOT
         displayed respectively.
 
-        The 'failed' option is only available in the 'script' mode. With
-        this option, commands that succeed will not be displayed, but a
-        command that fails will be displayed.
+        If the value is 'failed', a command that failed will be displayed.
+        Since it has already run, the command will be echoed after execution
+        rather than before.
 
     failure
         When a command fails, there are several alternatives that can be
@@ -333,11 +432,13 @@ GLOBAL OPTIONS
            continue
 
         The default is 'exit'. With this option, the shell exits after a
-        failed command.
+        failed command. The exit code is the code from the failed command.
+        When running in script mode, no information about remaining commands
+        is returned.
 
-        With the 'display' option, remaining commands are displayed (and the
-        'simple' option is used to determine how much detail is shown) but
-        they are not run.
+        With the 'display' option, remaining commands are displayed (in
+        'run' mode) or returned (in 'script' mode), but they are not run.
+        The exit code is the code from the failed command.
 
         With the 'continue' option, remaining command are executed, but the
         overall exit values is still set to point at the first failed
@@ -419,6 +520,9 @@ PER-COMMAND OPTIONS
                      ...
                      'fi',                         { 'flow' => '-' }
                     );
+
+        Note that for every flow '+', a flow '-' is required or else an
+        error will be reported.
 
     noredir
         If the noredir option is included, no command line redirection is

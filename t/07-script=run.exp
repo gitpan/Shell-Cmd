@@ -1,0 +1,47 @@
+SC_FAILED=0;
+SC_EXIT=0;
+SC_DIRE=`pwd`;
+#
+# Command 2
+#
+SC_CMD_PASSED=0;
+#
+# Command 2.1
+#
+if [ $SC_CMD_PASSED -eq 0 ] && [ $SC_FAILED -eq 0 ]; then
+   TESTDIR/bin/fail ;
+   # CHECK WITH
+   TESTDIR/bin/succ ;
+   CMD_EXIT=$?;
+   if [ $CMD_EXIT -eq 0 ]; then
+      SC_CMD_PASSED=1;
+   elif [ $SC_EXIT -eq 0 ]; then
+      SC_EXIT=$CMD_EXIT;
+   fi
+fi
+
+if [ $SC_FAILED -eq 0 ] && [ $SC_CMD_PASSED -eq 0 ]; then
+   SC_FAILED=2;
+fi
+#
+# Command 3
+#
+SC_CMD_PASSED=0;
+#
+# Command 3.1
+#
+if [ $SC_CMD_PASSED -eq 0 ] && [ $SC_FAILED -eq 0 ]; then
+   TESTDIR/bin/succ.2 ;
+   CMD_EXIT=$?;
+   if [ $CMD_EXIT -eq 0 ]; then
+      SC_CMD_PASSED=1;
+   elif [ $SC_EXIT -eq 0 ]; then
+      SC_EXIT=$CMD_EXIT;
+   fi
+fi
+
+if [ $SC_FAILED -eq 0 ] && [ $SC_CMD_PASSED -eq 0 ]; then
+   SC_FAILED=3;
+fi
+exit $SC_EXIT;
+

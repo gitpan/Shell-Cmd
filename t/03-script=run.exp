@@ -1,0 +1,51 @@
+SC_FAILED=0;
+SC_EXIT=0;
+SC_DIRE=`pwd`;
+if [ -d TESTDIR/bin ]; then
+
+   #
+   # Command 3
+   #
+   SC_CMD_PASSED=0;
+   #
+   # Command 3.1
+   #
+   if [ $SC_CMD_PASSED -eq 0 ] && [ $SC_FAILED -eq 0 ]; then
+      echo "bin found" ;
+      CMD_EXIT=$?;
+      if [ $CMD_EXIT -eq 0 ]; then
+         SC_CMD_PASSED=1;
+      elif [ $SC_EXIT -eq 0 ]; then
+         SC_EXIT=$CMD_EXIT;
+      fi
+   fi
+
+   if [ $SC_FAILED -eq 0 ] && [ $SC_CMD_PASSED -eq 0 ]; then
+      SC_FAILED=3;
+   fi
+else
+
+   #
+   # Command 5
+   #
+   SC_CMD_PASSED=0;
+   #
+   # Command 5.1
+   #
+   if [ $SC_CMD_PASSED -eq 0 ] && [ $SC_FAILED -eq 0 ]; then
+      echo "bin not found" ;
+      CMD_EXIT=$?;
+      if [ $CMD_EXIT -eq 0 ]; then
+         SC_CMD_PASSED=1;
+      elif [ $SC_EXIT -eq 0 ]; then
+         SC_EXIT=$CMD_EXIT;
+      fi
+   fi
+
+   if [ $SC_FAILED -eq 0 ] && [ $SC_CMD_PASSED -eq 0 ]; then
+      SC_FAILED=5;
+   fi
+fi
+
+exit $SC_EXIT;
+

@@ -17,6 +17,7 @@ my %script_prereq = (
 );
 
 my %test_prereq = (
+   'IO::File'                 => '0',
    'Test::Inter'              => '0',
    'Test::More'               => '0',
 );
@@ -32,7 +33,7 @@ if ($ExtUtils::MakeMaker::VERSION < 6.64) {
 
 WriteMakefile(
    NAME             => "Shell::Cmd",
-   VERSION          => "1.12",
+   VERSION          => "2.00",
    ABSTRACT         => "run shell commands with enhanced support",
    LICENSE          => "perl",
    ($ExtUtils::MakeMaker::VERSION >= 6.48

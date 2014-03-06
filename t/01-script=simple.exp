@@ -1,0 +1,11 @@
+SC_VAR_1="val_1";
+SC_VAR_2="val_2";
+export SC_VAR_1 SC_VAR_2;
+
+SC_DIRE="/tmp";
+cd "$SC_DIRE";
+TESTDIR/bin/succ;
+
+TESTDIR/bin/succ.2;
+
+

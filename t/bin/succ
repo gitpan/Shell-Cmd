@@ -1,5 +1,7 @@
-#!/bin/sh
+#!/usr/bin/perl
+$| = 1;
 
-echo "This will succeed"
-echo "It will give a warning" >&2
-exit 0
+print "This is the 'succ' command\n";
+warn  "It will give a warning\n";
+print "It will succeed\n";
+exit 0;
