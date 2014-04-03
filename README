@@ -101,7 +101,7 @@ METHODS
         This prepares a shell script based on the commands and options
         entered and runs it as appropriate. There are several different ways
         in which the commands can be run, and these are described in the
-        options method below. The most important option is the run option
+        options method below. The most important option is the mode option
         which sets the mode which determines the form of the script, and how
         it is run.
 
@@ -115,7 +115,7 @@ METHODS
         essence, this generates a script and runs it with the system() call.
 
         The return value of the method is the exit code of the script (which
-        is the exit code of a failing command).
+        is the exit code of the first failing command).
 
         If $obj is in 'dry-run' mode, the method should be called as either:
 
@@ -163,7 +163,8 @@ METHODS
                       that are given a STATUS of 'succ'.
 
                       If B<failure> is set to any other option, only
-                      the empty string is ever assigned as STATUS.
+                      the empty string is ever assigned as STATUS for
+                      a successful command.
 
            retried  : If a command is retried, all attempts may fail
                       (except the final one) and it is not counted as

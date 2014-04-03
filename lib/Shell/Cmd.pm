@@ -13,7 +13,7 @@ use Net::OpenSSH;
 use Parallel::ForkManager 0.7.6;
 
 our($VERSION);
-$VERSION = "2.00";
+$VERSION = "2.01";
 
 $| = 1;
 
@@ -99,12 +99,11 @@ sub options {
 
       my $val = $opts{$opt};
       $opt    = lc($opt);
-      $val    = lc($val);
 
       if ($opt eq 'mode') {
 
-         if ($val =~ /^(run|dry-run|script)$/) {
-            $$self{$opt} = $val;
+         if (lc($val) =~ /^(run|dry-run|script)$/) {
+            $$self{$opt} = lc($val);
             next OPT;
          }
 
@@ -114,29 +113,29 @@ sub options {
 
       } elsif ($opt eq 'output'  ||  $opt eq 'f-output') {
 
-         if ($val =~ /^(both|merged|stdout|stderr|quiet)$/) {
-            $$self{$opt} = $val;
+         if (lc($val) =~ /^(both|merged|stdout|stderr|quiet)$/) {
+            $$self{$opt} = lc($val);
             next OPT;
          }
 
       } elsif ($opt eq 'script') {
 
-         if ($val =~ /^(run|script|simple)$/) {
-            $$self{$opt} = $val;
+         if (lc($val) =~ /^(run|script|simple)$/) {
+            $$self{$opt} = lc($val);
             next OPT;
          }
 
       } elsif ($opt eq 'echo') {
 
-         if ($val =~ /^(echo|noecho|failed)$/) {
-            $$self{$opt} = $val;
+         if (lc($val) =~ /^(echo|noecho|failed)$/) {
+            $$self{$opt} = lc($val);
             next OPT;
          }
 
       } elsif ($opt eq 'failure') {
 
-         if ($val =~ /^(exit|display|continue)$/) {
-            $$self{$opt} = $val;
+         if (lc($val) =~ /^(exit|display|continue)$/) {
+            $$self{$opt} = lc($val);
             next OPT;
          }
 

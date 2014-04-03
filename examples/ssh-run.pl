@@ -7,7 +7,7 @@ if (! @ARGV) {
 use Shell::Cmd;
 $obj = new Shell::Cmd;
 $obj->options("echo" => "echo");
-$obj->options("run"  => "run");
+$obj->options("mode" => "run");
 $obj->cmd(q(echo "Dollar \$ Backtick \` Backslash \\\\ Quote \\""));
 $obj->cmd("hostname");
 $obj->ssh(@ARGV);

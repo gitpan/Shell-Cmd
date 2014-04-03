@@ -11,8 +11,10 @@ export TI_MODE
 TI_QUIET=2
 export TI_QUIET
 
-RELEASE_TESTING=1
-export RELEASE_TESTING
+if [ "$RELEASE_TESTING" != "0" ]; then
+   RELEASE_TESTING=1
+   export RELEASE_TESTING
+fi
 
 if [ "$1" = "-T" ]; then
    taint="-T -I../lib -I."

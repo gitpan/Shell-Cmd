@@ -3,28 +3,28 @@ abstract: 'run shell commands with enhanced support'
 author:
   - 'Sullivan Beck <sbeck@cpan.org>'
 build_requires:
-  IO::File: 0
-  Module::Build: 0.21
-  Test::Inter: 0
-  Test::More: 0
+  IO::File: '0'
+  Module::Build: '0.21'
+  Test::Inter: '0'
+  Test::More: '0'
 configure_requires:
-  Module::Build: 0.21
+  Module::Build: '0.21'
 dynamic_config: 1
-generated_by: 'Module::Build version 0.4205, CPAN::Meta::Converter version 2.133380'
+generated_by: 'Module::Build version 0.4205, CPAN::Meta::Converter version 2.140640'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
-  version: 1.4
+  version: '1.4'
 name: Shell-Cmd
 provides:
   Shell::Cmd:
     file: lib/Shell/Cmd.pm
-    version: 2.00
+    version: '2.01'
 requires:
-  Capture::Tiny: 0
-  Net::OpenSSH: 0
-  Parallel::ForkManager: 0
-  perl: 5.008
+  Capture::Tiny: '0'
+  Net::OpenSSH: '0'
+  Parallel::ForkManager: '0'
+  perl: '5.008'
 resources:
   license: http://dev.perl.org/licenses/
-version: 2.00
+version: '2.01'

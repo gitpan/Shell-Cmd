@@ -7,7 +7,7 @@ if (! @ARGV) {
 use Shell::Cmd;
 $obj = new Shell::Cmd;
 $obj->options("echo" => "echo");
-$obj->options("run"  => "run");
+$obj->options("mode"  => "run");
 $obj->options("ssh_num" => 5);
 $obj->options("ssh_sleep" => 10);
 $obj->cmd("hostname");

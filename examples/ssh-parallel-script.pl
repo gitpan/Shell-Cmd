@@ -7,7 +7,7 @@ if (! @ARGV) {
 use Shell::Cmd;
 $obj = new Shell::Cmd;
 $obj->options("echo" => "echo");
-$obj->options("run"  => "script");
+$obj->options("mode" => "script");
 $obj->options("ssh_num" => 5);
 $obj->cmd(q(echo "Dollar \$ Backtick \` Backslash \\\\ Quote \\""));
 $obj->cmd("hostname");
@@ -22,12 +22,15 @@ foreach my $host (@ARGV) {
    shift(@tmp);
 
    while (@tmp) {
-      my ($cmd,$out,$err) = @{ shift(@tmp) };
-      print "# $cmd\n";
-      print "# STDOUT\n";
-      print "$out\n";
-      print "# STDERR\n";
-      print "$err\n";
-      print "\n";
+      my ($cmd_num,$status,@alt) = @{ shift(@tmp) };
+      foreach my $alt (@alt) {
+         my($cmd,$exit,$stdout,$stderr) = @$alt;
+         print "# $cmd\n";
+         print "# STDOUT\n";
+         print join("\n",@$stdout),"\n";
+         print "# STDERR\n";
+         print join("\n",@$stderr),"\n";
+         print "\n";
+      }
    }
 }

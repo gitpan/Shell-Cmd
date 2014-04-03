@@ -38,3 +38,6 @@ Any suggestions, bug reports, or donations :-) should be sent to me.
    - The dire/env methods can now query current values
    - Added mode method
 
+2.01  2014-04-03
+   - Updated example files for 2.xx (forgot to do then when 2.00 was released)
+   - Fixed a bug where the dire option was getting lowercased
