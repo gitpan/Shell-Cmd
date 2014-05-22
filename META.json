@@ -43,7 +43,7 @@
    "provides" : {
       "Shell::Cmd" : {
          "file" : "lib/Shell/Cmd.pm",
-         "version" : "2.01"
+         "version" : "2.02"
       }
    },
    "release_status" : "stable",
@@ -52,5 +52,5 @@
          "http://dev.perl.org/licenses/"
       ]
    },
-   "version" : "2.01"
+   "version" : "2.02"
 }

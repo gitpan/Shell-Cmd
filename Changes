@@ -41,3 +41,7 @@ Any suggestions, bug reports, or donations :-) should be sent to me.
 2.01  2014-04-03
    - Updated example files for 2.xx (forgot to do then when 2.00 was released)
    - Fixed a bug where the dire option was getting lowercased
+   - Some simple fixes to avoid a warning and unwanted blank lines
+
+2.02  2014-05-22
+   - Fixed a bug where script output was not getting handled correctly

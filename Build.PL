@@ -39,7 +39,7 @@ my $class = Module::Build->subclass(
 
 my $build = $class->new(
       module_name        => "Shell::Cmd",
-      dist_version       => "2.01",
+      dist_version       => "2.02",
       dist_abstract      => "run shell commands with enhanced support",
       license            => "perl",
       dist_author        => "Sullivan Beck <sbeck\@cpan.org>",

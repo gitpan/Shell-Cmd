@@ -13,7 +13,7 @@ use Net::OpenSSH;
 use Parallel::ForkManager 0.7.6;
 
 our($VERSION);
-$VERSION = "2.01";
+$VERSION = "2.02";
 
 $| = 1;
 
@@ -867,8 +867,8 @@ BEGIN {
       #
 
       if ($sc_type eq 'script'  &&  ! $cmd_flow) {
-         push @script, qq(${curr_ind}echo "";),
-                       qq(${curr_ind}echo "" >&2;);
+         push @script, qq(${curr_ind}echo "";)      if ($sc_out);
+         push @script, qq(${curr_ind}echo "" >&2;)  if ($sc_err);
       }
 
       #
@@ -1155,6 +1155,8 @@ BEGIN {
    #
    sub _script_output {
       my($self,$out,$err,$exit) = @_;
+      $out    = ''  if (! defined $out);
+      $err    = ''  if (! defined $err);
       my @out = split(/\n/,$out);
       my @err = split(/\n/,$err);
 
@@ -1162,7 +1164,7 @@ BEGIN {
       # Parse stdout and stderr and turn it into:
       #
       #   ( [ CMD_NUM_1, ALT_NUM_1, TRY_1, EXIT_1, STDOUT_1, STDERR_1 ],
-      #     [ CMD_NUM_1, ALT_NUM_1, TRY_1, EXIT_1, STDOUT_1, STDERR_1 ], ... )
+      #     [ CMD_NUM_2, ALT_NUM_2, TRY_2, EXIT_2, STDOUT_2, STDERR_2 ], ... )
       #
 
       my @cmd;
@@ -1199,9 +1201,11 @@ BEGIN {
             while (@out  &&  $out[0] !~ /^\#SC CMD (\d+)\.(\d+)$/) {
                if      ($out[0] =~ /^\#SC_TRY (\d+)$/) {
                   $cmd_try = $1;
+                  shift(@out);
 
                } elsif ($out[0] =~ /^\#SC EXIT $cmd_num\.$alt_num (\d+)$/) {
                   $cmd_exit = $1;
+                  shift(@out);
 
                } else {
                   push(@stdout,shift(@out));
@@ -1237,6 +1241,7 @@ BEGIN {
             while (@err  &&  $err[0] !~ /^\#SC CMD (\d+)\.(\d+)$/) {
                if      ($err[0] =~ /^\#SC_TRY (\d+)$/) {
                   $tmp = $1;
+                  shift(@err);
                   if ($out_hdr  &&  $tmp != $cmd_try) {
                      # Mismatched try number... should never happen
                      $self->_print(1,"Mismatched try number in STDERR: $err_hdr");
@@ -1246,6 +1251,7 @@ BEGIN {
 
                } elsif ($err[0] =~ /^\#SC EXIT $cmd_num\.$alt_num (\d+)$/) {
                   $tmp = $1;
+                  shift(@err);
                   if ($out_hdr  &&  $tmp != $cmd_exit) {
                      # Mismatched exit codes... should never happen
                      $self->_print(1,"Mismatched exit codes in STDERR: $err_hdr");

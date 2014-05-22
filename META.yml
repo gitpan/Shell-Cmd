@@ -19,7 +19,7 @@ name: Shell-Cmd
 provides:
   Shell::Cmd:
     file: lib/Shell/Cmd.pm
-    version: '2.01'
+    version: '2.02'
 requires:
   Capture::Tiny: '0'
   Net::OpenSSH: '0'
@@ -27,4 +27,4 @@ requires:
   perl: '5.008'
 resources:
   license: http://dev.perl.org/licenses/
-version: '2.01'
+version: '2.02'
